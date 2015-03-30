@@ -11,11 +11,11 @@
 using namespace std;
 
 
-struct {
+struct compare2 {
         bool operator()(std::pair<int, int> lhs, std::pair<int, int> rhs) const {
             return lhs.second < rhs.second;
         }
-} Compare;
+};
 
 
 map<string, int> NodeMap; //Hash map is deprecated. Can use unordered_map / map instead
@@ -24,6 +24,7 @@ set<int> KNodes;
 int K;
 
 vector<vector<int>> hvalues;
+
 /*struct comparator{
 	bool operator() (const pair<int, int>& lhs, pair<int, int>& rhs){
 		return lhs.second < rhs.second;
@@ -39,8 +40,8 @@ vector<int> Dijkstra(int);
 void LoadGraph(void);
 int Algo2(double threshold);
 void LoadHeuristicValues();
-bool GoalTest(vector<set<int>>& explored, double threshold, int& ans);
-
+bool GoalTest(map<int, set<int>>& explored, double threshold, int& ans);
+int GetHValue(int node, vector<int>& minhvalues);
 
 
 int main(){
@@ -238,11 +239,55 @@ int Algo2(double threshold)
 		}
 		cout << endl;
 	}*/
-	vector<vector<pair<int, int>>> frontier;
-	vector<set<int>> explored;
+	//map<int, priority_queue<pair<int, int>, std::vector<int>, compare2>> frontier; //Issues with priority queue. Will try to solve them later.
+	map<int, vector<tuple<int, int, int>>> frontier;
+	map<int,set<int>> explored;
+	//priority_queue<pair<int, int>, std::vector<int>, compare2> temp2;
+	vector<int> minhvalues(NodeMap.size(), 0);
+	for(auto x: KNodes)
+	{
+		set<int> temp;
+		temp.insert(x);
+		explored.insert(pair<int, set<int>>(x, temp));
+		
+		vector<tuple<int, int, int>> temp2;
+		for(auto y: Graph[x])
+		{
+			int h = GetHValue(y.first, minhvalues);
+			temp2.push_back(make_tuple(y.first, h+y.second, y.second));
+
+		}
+		//priority_queue<pair<int, int>, std::vector<int>, compare2> temp2;
+		frontier.insert(pair<int, vector<tuple<int, int, int>>>(x, temp2));
+		//frontier.insert(pair<int, priority_queue<pair<int, int>, std::vector<int>, compare2>>(x, temp2));
+
+	}
+
 	int ans=0;
 	while(!GoalTest(explored, threshold, ans))
 	{
+		for(auto x: KNodes)
+		{
+			int minx=INT_MAX;
+			int selected=-1;
+			for(auto y: frontier[x])
+			{
+				if(get<1>(y) < minx)
+				{
+					minx = get<1>(y);
+					selected = get<0>(y);
+				}
+			}
+
+			explored[x].insert(selected);
+
+			for(auto y: Graph[selected])
+			{
+				int g = get<2>(frontier[x][selected]) + y
+			}
+
+
+		}
 
 	}
 
@@ -250,6 +295,29 @@ int Algo2(double threshold)
 
 
 	return 1;
+
+}
+
+int GetHValue(int node, vector<int>& minhvalues)
+{
+
+	if(minhvalues[node]==0)
+	{
+		int minx=INT_MAX;	
+		for(int i=0; i<NodeMap.size(); i++)
+		{
+			if(KNodes.find(i)==KNodes.end() && i!=node)
+			{
+				if(hvalues[node][i]<minx)	
+				minx = hvalues[node][i];
+			}
+		}
+
+		minhvalues[node]=minx;
+
+	}
+
+	return minhvalues[node];
 
 }
 
@@ -276,14 +344,14 @@ void LoadHeuristicValues()
 	return;
 }
 
-bool GoalTest(vector<set<int>>& explored, double threshold, int& ans)
+bool GoalTest(map<int, set<int>>& explored, double threshold, int& ans)
 {
 	vector<int> freqcount(NodeMap.size(), 0);
-	for(int i=0; i<NodeMap.size(); i++)
+	for(auto x: explored)
 	{
-		for(auto x: vector[i])
+		for(auto y: x.second)
 		{
-			freqcount[x]++;
+			freqcount[y]++;
 		}
 
 	}
