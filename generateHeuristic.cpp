@@ -19,7 +19,7 @@ int min_edge_weight;
 void LoadGraph(void);
 void GenerateHeuristic(void);
 int GetMinEdgeWeight(void);
-vector<int> ApplyBFS(std::pair<const std::basic_string<char>, int>);
+vector<int> ApplyBFS(int rootnode);
 
 
 int main()
@@ -124,10 +124,18 @@ void GenerateHeuristic(void)
 {	
 	ofstream f1;
 	f1.open("heuristic.txt");
-	for(auto x: NodeMap)
+	for(int j=0; j<NodeMap.size(); j++)
 	{ 
-		vector<int> hvalues = ApplyBFS(x);
+		vector<int> hvalues = ApplyBFS(j);
+		f1 << j;
+		for(int i=0; i<hvalues.size(); i++)
+		{
+			f1 << " " << hvalues[i];
+		}
+		f1 << endl;
 	}
+	f1.close();
+
 
 
 	return;
@@ -146,16 +154,46 @@ int GetMinEdgeWeight(void)
 			}
 		}	
 	}
-	cout <<  minx;
+	cout <<  minx << endl;
 	return minx;
 
 }
 
-vector<int> ApplyBFS(std::pair<const std::basic_string<char>, int> x)
+vector<int> ApplyBFS(int root_node)
 {
 	vector<int> hvalues(NodeMap.size());	
-	queue<int> frontier;
+	queue<int> Q;
 	set<int> explored;
+	set<int> val_calculated;
+	//int depth=0;
 	//cout  << x.first << endl;
+	Q.push(root_node);
+	hvalues[root_node] = 0;
+	val_calculated.insert(root_node);
+	int cur_node;
+	while(!Q.empty())
+	{
+		cur_node=Q.front();
+		Q.pop();
+		if(explored.find(cur_node) == explored.end())
+		{
+			
+
+			for(auto x: Graph[cur_node])
+			{
+				if(val_calculated.find(x.first) == val_calculated.end())
+				{
+					hvalues[x.first] = hvalues[cur_node]+min_edge_weight;
+					val_calculated.insert(x.first);
+					Q.push(x.first);
+				}
+				
+			}
+			explored.insert(cur_node);
+
+
+		}
+	}
+
 	return hvalues;
 }
