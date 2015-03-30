@@ -1,14 +1,14 @@
-#include<iostream>
-#include<fstream>
-#include<string>
-#include<hash_map>
-#include<set>
-#include<queue>
+#include <iostream>
+#include <fstream>
+#include <string>
+#include <hash_map>
+#include <set>
+#include <queue>
 
 using namespace std;
 
 
-hash_map<string, int> NodeMap;
+hash_map<string, int> NodeMap; //Hash map is deprecated. Can use unordered_map / map instead
 vector<vector<pair<int, int>>> Graph;
 set<int> KNodes;
 int K;
