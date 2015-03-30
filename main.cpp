@@ -1,31 +1,78 @@
 #include <iostream>
 #include <fstream>
 #include <string>
-#include <hash_map>
+#include <map>
 #include <set>
 #include <queue>
+#include <climits>
+#include <algorithm>
+
 
 using namespace std;
 
 
-hash_map<string, int> NodeMap; //Hash map is deprecated. Can use unordered_map / map instead
+struct {
+        bool operator()(std::pair<int, int> lhs, std::pair<int, int> rhs) const {
+            return lhs.second < rhs.second;
+        }
+} Compare;
+
+
+map<string, int> NodeMap; //Hash map is deprecated. Can use unordered_map / map instead
 vector<vector<pair<int, int>>> Graph;
 set<int> KNodes;
 int K;
+
+vector<vector<int>> hvalues;
 /*struct comparator{
 	bool operator() (const pair<int, int>& lhs, pair<int, int>& rhs){
 		return lhs.second < rhs.second;
 	};*/
 
+
+
+
 int Algo1();
 //int Algo2();
 float CalcAvgDist(int);
 vector<int> Dijkstra(int);
+void LoadGraph(void);
+int Algo2(double threshold);
+void LoadHeuristicValues();
+bool GoalTest(vector<set<int>>& explored, double threshold, int& ans);
+
+
 
 int main(){
 
-
+	LoadGraph();
 	/*Read the graph from csv*/
+	
+
+	string value;
+	int iter;
+	/* User I/O */
+	/*cout << "Enter value of K:";
+	cin >> K;
+
+	cout << "Enter the ids for the k nodes from the following nodes:" << endl;
+	for (auto i = NodeMap.begin(); i != NodeMap.end(); i++){
+		cout << i->second << "\t\t" << i->first << endl;
+	}
+	for (int x = 0; x < K; x++){
+		cin >> iter;
+		KNodes.insert(iter);
+	}
+*/
+	//cout << "Output of Algorithm 1:\t" << Algo1() << endl;
+	cout << "Output of Algorithm 2:\t" << Algo2(1) << endl;
+
+	cin >> value;
+	return 0;
+}
+
+void LoadGraph(void)
+{
 	ifstream file("file.csv"); // declare file stream
 	string value, temp;
 	int iter, cursrc, curdst, x;
@@ -105,25 +152,6 @@ int main(){
 	}
 	file.close();
 
-
-	/* User I/O */
-	cout << "Enter value of K:";
-	cin >> K;
-
-	cout << "Enter the ids for the k nodes from the following nodes:" << endl;
-	for (auto i = NodeMap.begin(); i != NodeMap.end(); i++){
-		cout << i->second << "\t\t" << i->first << endl;
-	}
-	for (x = 0; x < K; x++){
-		cin >> iter;
-		KNodes.insert(iter);
-	}
-
-	cout << "Output of Algorithm 1:\t" << Algo1() << endl;
-	//cout << "Output of Algorithm 2:\t" << Algo2() << endl;
-
-	cin >> value;
-	return 0;
 }
 
 int Algo1(){
@@ -196,4 +224,83 @@ vector<int> Dijkstra(int NodeID){
 		total++;
 	}
 	return Dist;
+}
+
+int Algo2(double threshold)
+{
+	LoadHeuristicValues();
+
+	/*for(int i=0; i<NodeMap.size(); i++)
+	{
+		for(int j=0; j<NodeMap.size(); j++)
+		{
+			cout << hvalues[i][j] << " " ;
+		}
+		cout << endl;
+	}*/
+	vector<vector<pair<int, int>>> frontier;
+	vector<set<int>> explored;
+	int ans=0;
+	while(!GoalTest(explored, threshold, ans))
+	{
+
+	}
+
+
+
+
+	return 1;
+
+}
+
+void LoadHeuristicValues()
+{
+	ifstream f1("heuristic.txt");
+
+	for(int i=0; i<NodeMap.size(); i++)
+	{
+		vector <int> temp;
+		int discard;
+		f1 >> discard;
+		for(int j=0; j<NodeMap.size(); j++)
+		{
+			int t;
+			f1 >> t;
+			temp.push_back(t);
+		}
+		hvalues.push_back(temp);
+
+	}
+
+
+	return;
+}
+
+bool GoalTest(vector<set<int>>& explored, double threshold, int& ans)
+{
+	vector<int> freqcount(NodeMap.size(), 0);
+	for(int i=0; i<NodeMap.size(); i++)
+	{
+		for(auto x: vector[i])
+		{
+			freqcount[x]++;
+		}
+
+	}
+
+	int maxm=INT_MIN;
+
+	for(int i=0; i<NodeMap.size(); i++)
+	{
+		if(freqcount[i]>maxm)
+		{
+			maxm=freqcount[i];
+			ans=i;
+		}
+	}	
+
+	if(maxm >= threshold/double(K))
+		return true;
+	else
+		return false;
 }
