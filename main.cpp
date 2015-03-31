@@ -67,7 +67,7 @@ int main(){
 		KNodes.insert(iter);
 	}
 
-	//cout << "Output of Algorithm 1:\t" << Algo1() << endl;
+	cout << "Output of Algorithm 1:\t" << Algo1() << endl;
 	cout << "Output of Algorithm 2:\t" << Algo2(1) << endl;
 
 	cin >> value;
@@ -279,15 +279,18 @@ int Algo2(double threshold)
 
 	}
 
-	int ans=0;
+	int ans=-1;
+	int runno=0;
 	while(!GoalTest(explored, threshold, ans))
 	{
+
 		for(auto x: KNodes)
 		{
 			int minx=INT_MAX;
 			int selected=-1;
 			for(auto y: frontier[x])
 			{
+
 				if(y[2] < minx)
 				{
 					minx = y[2];
@@ -295,19 +298,34 @@ int Algo2(double threshold)
 				}
 			}
 
+			int parentg=0;
 			explored[x].insert(selected);
+			for(auto y: frontier[x])
+			{
+				//cout << y[0] <<  " in frontier" << endl;
+				if(y[0]==selected)
+				{
+					parentg=y[1];
+					break;
+				}
+				
+			}
+			//cout << selected << endl;
 
 			for(auto y: Graph[selected]) //vector<vector<pair<int, int>>> Graph; map<int, vector<vector<int>>> frontier;
 			{
-				if(explored[x].find(y)!=explored[x].end())
+				if(explored[x].find(y.first)!=explored[x].end())
+				{
+					//cout << "here " << y.first  << endl;
 					continue;
-				int g = frontier[x][selected][1] + y.second;
+				}
+				int g = parentg + y.second;
 				int h = GetHValue(y.first, minhvalues);
 				int newf=g+h;
 				bool flag=false;
 				for(auto z: frontier[x])
 				{
-					if(z[0]==y)
+					if(z[0]==y.first)
 					{
 						z[2] = min(z[2], newf);
 						flag=true;
@@ -318,18 +336,28 @@ int Algo2(double threshold)
 				if(!flag)
 				{
 					vector<int> temp;
-					temp.push_back(y);
+					temp.push_back(y.first);
 					temp.push_back(g);
 					temp.push_back(newf);
 					frontier[x].push_back(temp);
+					//cout << y.first << " added" << endl;
 				}
 
 				
 			}
-			frontier.erase(x);
+			for(int i=0; i<frontier[x].size(); i++)
+			{
+				if(frontier[x][i][0]==selected)
+				{
+					frontier[x].erase(frontier[x].begin()+i);
+					break;
+				}
 
+			}
+			
 
 		}
+		runno++;
 
 	}
 
@@ -402,14 +430,14 @@ bool GoalTest(map<int, set<int>>& explored, double threshold, int& ans)
 
 	for(int i=0; i<NodeMap.size(); i++)
 	{
-		if(freqcount[i]>maxm)
+		if(freqcount[i]>maxm && KNodes.find(i)==KNodes.end())
 		{
 			maxm=freqcount[i];
 			ans=i;
 		}
 	}	
 
-	if(maxm >= threshold/double(K))
+	if(maxm >= threshold*double(K))
 		return true;
 	else
 		return false;
