@@ -1,3 +1,5 @@
+//Note : Compile with g++ -std=c++11 main.cpp
+
 #include <iostream>
 #include <fstream>
 #include <string>
@@ -53,7 +55,7 @@ int main(){
 	string value;
 	int iter;
 	/* User I/O */
-	/*cout << "Enter value of K:";
+	cout << "Enter value of K:";
 	cin >> K;
 
 	cout << "Enter the ids for the k nodes from the following nodes:" << endl;
@@ -64,7 +66,7 @@ int main(){
 		cin >> iter;
 		KNodes.insert(iter);
 	}
-*/
+
 	//cout << "Output of Algorithm 1:\t" << Algo1() << endl;
 	cout << "Output of Algorithm 2:\t" << Algo2(1) << endl;
 
@@ -240,25 +242,39 @@ int Algo2(double threshold)
 		cout << endl;
 	}*/
 	//map<int, priority_queue<pair<int, int>, std::vector<int>, compare2>> frontier; //Issues with priority queue. Will try to solve them later.
-	map<int, vector<tuple<int, int, int>>> frontier;
+	//map<int, vector<tuple<int, int, int>>> frontier;
+	map<int, vector<vector<int>>> frontier;
 	map<int,set<int>> explored;
 	//priority_queue<pair<int, int>, std::vector<int>, compare2> temp2;
 	vector<int> minhvalues(NodeMap.size(), 0);
 	for(auto x: KNodes)
 	{
 		set<int> temp;
-		temp.insert(x);
+		//temp.insert(x);
 		explored.insert(pair<int, set<int>>(x, temp));
+		vector<vector<int>> temp2;
+		//vector<tuple<int, int, int>> temp2;
 		
-		vector<tuple<int, int, int>> temp2;
-		for(auto y: Graph[x])
+		/*for(auto y: Graph[x])
 		{
 			int h = GetHValue(y.first, minhvalues);
+			vector<int> temp3;
+			temp3.push_back(y.first);
+			temp3.push_back(0);
 			temp2.push_back(make_tuple(y.first, h+y.second, y.second));
 
-		}
+
+		}*/
 		//priority_queue<pair<int, int>, std::vector<int>, compare2> temp2;
-		frontier.insert(pair<int, vector<tuple<int, int, int>>>(x, temp2));
+		
+		vector<int> temp3;
+		temp3.push_back(x);
+		temp3.push_back(0); //g
+		int h = GetHValue(x, minhvalues);
+		temp3.push_back(h+0);
+		temp2.push_back(temp3);
+		//frontier.insert(pair<int, vector<tuple<int, int, int>>>(x, temp2));
+		frontier.insert(pair<int, vector<vector<int>>>(x,  temp2));
 		//frontier.insert(pair<int, priority_queue<pair<int, int>, std::vector<int>, compare2>>(x, temp2));
 
 	}
@@ -272,19 +288,45 @@ int Algo2(double threshold)
 			int selected=-1;
 			for(auto y: frontier[x])
 			{
-				if(get<1>(y) < minx)
+				if(y[2] < minx)
 				{
-					minx = get<1>(y);
-					selected = get<0>(y);
+					minx = y[2];
+					selected = y[0];
 				}
 			}
 
 			explored[x].insert(selected);
 
-			for(auto y: Graph[selected])
+			for(auto y: Graph[selected]) //vector<vector<pair<int, int>>> Graph; map<int, vector<vector<int>>> frontier;
 			{
-				int g = get<2>(frontier[x][selected]) + y
+				if(explored[x].find(y)!=explored[x].end())
+					continue;
+				int g = frontier[x][selected][1] + y.second;
+				int h = GetHValue(y.first, minhvalues);
+				int newf=g+h;
+				bool flag=false;
+				for(auto z: frontier[x])
+				{
+					if(z[0]==y)
+					{
+						z[2] = min(z[2], newf);
+						flag=true;
+
+						break;
+					}
+				}
+				if(!flag)
+				{
+					vector<int> temp;
+					temp.push_back(y);
+					temp.push_back(g);
+					temp.push_back(newf);
+					frontier[x].push_back(temp);
+				}
+
+				
 			}
+			frontier.erase(x);
 
 
 		}
@@ -294,7 +336,7 @@ int Algo2(double threshold)
 
 
 
-	return 1;
+	return ans;
 
 }
 
